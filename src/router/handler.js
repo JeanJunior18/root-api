@@ -1,19 +1,15 @@
 import { parse } from 'node:url'
 import { routes } from './routes.js'
-import { notFound } from './exceptions.js'
+import { errorHandler, notFound } from './exceptions.js'
 
-export const handler = (req, res) => {
-  const { method, url } = req
-
+export const handler = async (req, res) => {
+  const { url, method } = req
   const { pathname } = parse(url, true)
 
   console.log({ method, url, pathname })
 
-  switch (method) {
-    case 'GET':
-      const chosen = routes.GET[pathname]
-      return chosen ? chosen(req, res) : notFound(req, res)
-    default:
-      return notFound(req, res)
-  }
+
+  const chosen = routes[method][pathname] || notFound(req, res)
+
+  Promise.resolve(chosen(req, res)).catch(errorHandler(res))
 }

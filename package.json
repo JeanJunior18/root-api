@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "start:dev": "npx nodemon src/index.js"
+    "start:dev": "npx nodemon src/index.js",
+    "test": "node --test tests/*"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "keywords": [],
   "author": "",

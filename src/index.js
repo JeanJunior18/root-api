@@ -1,35 +1,26 @@
-import http from 'http'
-import { handler } from './router/handler.js'
+import os from 'os';
+import cluster from 'cluster';
 
-const PORT = process.env.PORT || 3000
+const primaryProcess = () => {
+  const numCPUs = os.cpus().length;
+  console.log(`Primary ${process.pid} is running`);
+  console.log(`Number of CPUs: ${numCPUs}\n`);
 
-export const server = http
-  .createServer(handler)
-  .listen(PORT)
-  .once('listening', () => {
-    console.log(`Server running on port ${PORT}`)
-  })
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-
-// Catch all errors
-process.on('uncaughtException', (err, origin) => {
-  console.log(err, origin)
-})
-process.on('unhandledRejection', async (reason, promise) => {
-  console.log(reason)
-})
-
-// Graceful shutdown
-function gracefulShutdown(event) {
-  console.log(`Received ${event} event`)
-  console.log('Shutting down...')
-  server.close(() => {
-    console.log('Shutdown complete')
-    process.exit(0)
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+    if (code !== 0 && !worker.exitedAfterDisconnect) {
+      console.log(`Starting a new worker`);
+      cluster.fork();
+    }
   })
 }
-process.on('SIGTERM', gracefulShutdown)
-process.on('SIGINT', gracefulShutdown)
-process.on('exit', (code) => {
-  console.log(`Exit signal received code ${code}`)
-})
+
+const workerProcess = async () => {
+  await import('./server.js')
+}
+
+cluster.isPrimary ? primaryProcess() : workerProcess();

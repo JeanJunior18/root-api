@@ -11,7 +11,7 @@ test('Hero integration test suite', async t => {
 
   const testServerAddress = `http://localhost:${testPort}/heroes`
 
-  await t.test('should create a hero', async t => {
+  await t.test('should create a hero', async () => {
     const data = {
       name: 'Batman',
       power: 'Rich',
@@ -32,6 +32,7 @@ test('Hero integration test suite', async t => {
     assert.strictEqual(result.data.name, 'Batman', 'should return created hero')
     assert.ok(result.data.id, 'should return hero id')
   })
+
 
   await promisify(server.close.bind(server))()
 })

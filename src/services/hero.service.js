@@ -8,6 +8,10 @@ export class HeroService {
   async create(data) {
     console.log('Creating hero...')
     const hero = new Hero(data)
+    // setTimeout(() => {
+    //   throw new Error('Um erro qualquer')
+    // }, 100)
+    Promise.reject('Promise reject')
     return this.heroRepository.create(hero)
   }
 

@@ -1,6 +1,5 @@
 import { writeFile, readFile } from 'node:fs/promises'
-import path from 'path'
-import { Hero } from '../entities/hero.entity.js'
+import { existsSync } from 'node:fs'
 
 export class HeroRepository {
   constructor(file) {
@@ -15,7 +14,12 @@ export class HeroRepository {
   }
 
   async findAll() {
-    return JSON.parse(await readFile(this.file))
+    if (!existsSync(this.file))
+      await writeFile(this.file, JSON.stringify([]))
+
+    const heroes = await readFile(this.file)
+
+    return JSON.parse(heroes)
   }
 
   async findById(id) {
